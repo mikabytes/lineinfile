@@ -12,6 +12,8 @@ export default async function lineInFile({
   line: lineToAdd,
   state = `present`,
 }) {
+  await mkdirp(path)
+
   let file
   try {
     file = await fs.open(path, "r+")
@@ -89,3 +91,17 @@ export default async function lineInFile({
     await fs.writeFile(path, resultLines.join(`\n`))
   }
 }
+
+async function mkdirp(path) {
+  const dirs = path.split(`/`)
+  const filename = dirs.pop()
+
+  if (dirs.length > 0) {
+    await fs.mkdir(dirs.join(`/`), { recursive: true })
+  }
+}
+
+lineInFile({
+  path: `./mkdir/p/it`,
+  line: `it works`,
+})
