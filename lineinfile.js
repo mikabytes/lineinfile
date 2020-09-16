@@ -102,7 +102,15 @@ export default async function lineInFile({
         if (insertAfter === `EOF`) {
           resultLines.push(lineToAdd)
         } else {
-          const index = resultLines.findIndex((it) => it.match(insertAfter))
+          let index = -1
+
+          for (let i = resultLines.length - 1; i >= 0; i--) {
+            if (resultLines[i].match(insertAfter)) {
+              index = i
+              break
+            }
+          }
+
           if (index === -1) {
             resultLines.push(lineToAdd)
           } else {
@@ -129,9 +137,9 @@ async function mkdirp(path) {
     await fs.mkdir(dirs.join(`/`), { recursive: true })
   }
 }
-//
+
 //lineInFile({
 //  path: `./it`,
 //  line: `it works`,
-//  insertAfter: `EOF`,
+//  insertAfter: `import`,
 //})
