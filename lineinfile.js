@@ -6,11 +6,15 @@ import fs from "fs/promises"
 // regex: a regex for searching for line, if unset will use literal 'line' matching
 // line: What should be printed instead of regex (or a new line)
 // state: [absent/present] whether to remove the line or ensure it is set
+// insertBefore: Either a regex of a line to insert before, or the string `BOF` will add it on start. If set has precedence over insertAfter
+// insertAfter: Either a regex of a lin eto insert after, or the string `EOF` will add it to bottom
 export default async function lineInFile({
   path,
   regex,
   line: lineToAdd,
   state = `present`,
+  insertBefore = null, // can be `BOF` (beginning of file) or a regex
+  insertAfter = null, // can be `EOF` (end of file) or a regex
 }) {
   await mkdirp(path)
 
@@ -81,8 +85,33 @@ export default async function lineInFile({
     }
 
     if (!found) {
-      // it's not present anywhere in file, so add it last
-      resultLines.push(lineToAdd)
+      // it's not present anywhere in file, so we need to add it
+
+      if (insertBefore) {
+        if (insertBefore === `BOF`) {
+          resultLines.unshift(lineToAdd)
+        } else {
+          const index = resultLines.findIndex((it) => it.match(insertBefore))
+          if (index <= 0) {
+            resultLines.unshift(lineToAdd)
+          } else {
+            resultLines.splice(index, 0, lineToAdd)
+          }
+        }
+      } else if (insertAfter) {
+        if (insertAfter === `EOF`) {
+          resultLines.push(lineToAdd)
+        } else {
+          const index = resultLines.findIndex((it) => it.match(insertAfter))
+          if (index === -1) {
+            resultLines.push(lineToAdd)
+          } else {
+            resultLines.splice(index + 1, 0, lineToAdd)
+          }
+        }
+      } else {
+        resultLines.push(lineToAdd)
+      }
       changed = true
     }
   }
@@ -100,8 +129,9 @@ async function mkdirp(path) {
     await fs.mkdir(dirs.join(`/`), { recursive: true })
   }
 }
-
-lineInFile({
-  path: `./mkdir/p/it`,
-  line: `it works`,
-})
+//
+//lineInFile({
+//  path: `./it`,
+//  line: `it works`,
+//  insertAfter: `EOF`,
+//})
