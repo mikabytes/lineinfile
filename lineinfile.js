@@ -1,5 +1,3 @@
-import fs from "fs/promises"
-
 // ansible inspired function to ensure a specified state in file
 //
 // path: the path to the file to ensure state for
@@ -8,6 +6,8 @@ import fs from "fs/promises"
 // state: [absent/present] whether to remove the line or ensure it is set
 // insertBefore: Either a regex of a line to insert before, or the string `BOF` will add it on start. If set has precedence over insertAfter
 // insertAfter: Either a regex of a lin eto insert after, or the string `EOF` will add it to bottom
+import fs from "fs/promises"
+
 export default async function lineInFile({
   path,
   regex,
@@ -57,7 +57,7 @@ export default async function lineInFile({
         }
       }
     }
-  } else if (state === `present`) {
+  } else if (state === `replace`) {
     let found = false
 
     for (const line of lines) {
@@ -82,6 +82,21 @@ export default async function lineInFile({
         }
         resultLines.push(line)
       }
+    }
+  } else if (state === `present`) {
+    let found = false
+
+    for (const line of lines) {
+      if (regex) {
+        if (line.match(regex)) {
+          found = true
+        }
+      } else {
+        if (line === lineToAdd) {
+          found = true
+        }
+      }
+      resultLines.push(line)
     }
 
     if (!found) {

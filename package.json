@@ -1,6 +1,6 @@
 {
   "name": "lineinfile",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Manage lines in text files - inspired by Ansible's equivalent",
   "main": "lineinfile.js",
   "scripts": {
